@@ -179,23 +179,29 @@ if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
         if grep -q "<ca>" "$FILE"; then
             sed '1,/<ca>/d;/<\/ca>/,$d' $FILE > ${NEWPATH}ca.crt
             sed -i "/<ca>/,/<\/ca>/c\ca ${NEWPATH}ca.crt" ${NEWFILE}
+            sed -i "/^ca \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<cert>" "$FILE"; then
             sed '1,/<cert>/d;/<\/cert>/,$d' $FILE > ${NEWPATH}client.crt
             sed -i "/<cert>/,/<\/cert>/c\cert ${NEWPATH}client.crt" ${NEWFILE}
+            sed -i "/^cert \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<key>" "$FILE"; then
             sed '1,/<key>/d;/<\/key>/,$d' $FILE > ${NEWPATH}client.key
             sed -i "/<key>/,/<\/key>/c\key ${NEWPATH}client.key" ${NEWFILE}
+            sed -i "/^key \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<tls-auth>" "$FILE"; then
             sed '1,/<tls-auth>/d;/<\/tls-auth>/,$d' $FILE > ${NEWPATH}ta.key
             sed -i "/<tls-auth>/,/<\/tls-auth>/c\tls-auth ${NEWPATH}ta.key" ${NEWFILE}
+            sed -i "/^tls-auth \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<dh>" "$FILE"; then
             sed '1,/<dh>/d;/<\/dh>/,$d' $FILE > ${NEWPATH}dh.pem
             sed -i "/<dh>/,/<\/dh>/c\dh ${NEWPATH}dh.pem" ${NEWFILE}
+            sed -i "/^dh \[inline\]/d" ${NEWFILE}
         fi
+        echo "New OVPN config file created: $NEWFILE"
 
     else
         echo "Invalid open vpn file extension"
@@ -215,9 +221,9 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
             VARVAL="${!VAR}"
             if [ -z "$VARVAL" ]; then
                 tagname=$(echo "$tagname" | sed "s/_/-/")
-                path="$(sed -n -e "s/^$tagname //p" $NEWFILE | xargs readlink -f)"
+                path="$(sed -n -e "/^$tagname \[/b;s/^$tagname //p" $NEWFILE | xargs -r readlink -f)"
                 if [ ! -z "$path" ]; then
-                    declare $VAR=$path
+                    declare $VAR="$path"
                 fi
             fi
         done
@@ -232,6 +238,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
         #convert the tagname to upper to access the variables.
         VAR=$(echo "$tagname" | tr '[:lower:]' '[:upper:]')
         VARVAL="${!VAR}"
+
         if [ ! -z "$VARVAL" ] && [ ! -f "$VARVAL" ]; then
             echo "Provided ${tagname} file does not exist."
             exit 1
@@ -241,6 +248,9 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
         if [ ! -z "$VARVAL" ]; then
             #If substitution exist in the config file then replace it with inline content
             #else append the config file with the content of the file
+            if ! grep -qE "^${tagname} \[inline\]" "$NEWFILE"; then
+                echo "${tagname} [inline]" >> ${NEWFILE}
+            fi
             if grep -qE "^${tagname}[ \t]*.*$" "$NEWFILE"; then
                 FULLFILENAME=$(basename $VARVAL)
                 sed -i "/${tagname} .*${FULLFILENAME}/c\<${tagname}>\n<\/${tagname}>" ${NEWFILE}
@@ -250,6 +260,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
                 cat ${VARVAL} >> ${NEWFILE}
                 echo "</${tagname}>" >> ${NEWFILE}
             fi
+
         fi
 
     done
@@ -257,4 +268,5 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
     #then we know that the generated one config needs to be regenerated.
     filemodtime=$(stat -c%y "$FILE" | sed 's/[ ]\+/ /g')
     touch -m -d "$filemodtime" "$NEWFILE"
+    echo "New OVPN config file created: $NEWFILE"
 fi
