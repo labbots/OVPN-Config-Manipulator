@@ -3,7 +3,7 @@
 function usage() {
 
     echo -e "\nThe script can be used to split or merge ovpn file."
-    echo -e "\nBasic Usage:\n $0 [options..] <ovpn-config-file> \n"
+    echo -e "\nBasic Usage:\n ${0##*/} [options..] <ovpn-config-file> \n"
     echo -e "Open VPN config file can be passed either as argument or through option (--source | -s ). \n"
     echo -e "\nOptions:"
     echo -e "-p | --split - flag to split ovpn file."
@@ -18,11 +18,11 @@ function usage() {
     echo -e "--dh-params <filepath> - opton to specify the location of the dh params file."
     echo -e "-h | --help - Display usage instructions.\n"
     echo -e "Example usage for merge:\n"
-    echo -e "$0 -m=auto -s home/openvpn/vpn.ovpn"
+    echo -e "${0##*/} -m=auto -s home/openvpn/vpn.ovpn"
     echo -e "--ca home/openvpn/vpn-ca.crt"
     echo -e "-d home/openvpn/merged/ --cert home/openvpn/vpn-client.crt --key home/openvpn/vpn-client.key"
     echo -e "\n\nExample usage for split:\n"
-    echo -e "$0 -s home/openvpn/vpn.ovpn -d home/openvpn/split/\n"
+    echo -e "${0##*/} -s home/openvpn/vpn.ovpn -d home/openvpn/split/\n"
     exit 0
 }
 
