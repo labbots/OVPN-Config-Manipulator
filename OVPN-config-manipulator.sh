@@ -39,7 +39,7 @@ SHORTOPTS="hm::ps:d:D:"
 LONGOPTS="help,merge::,split,source:,destination:,ca:,cert:,key:,tls-auth:,dh-params:"
 set -o errexit -o noclobber -o pipefail
 
-OPTS="$(getopt -s bash --options $SHORTOPTS --longoptions $LONGOPTS --name $PROGNAME -- "$@")"
+OPTS="$(getopt -s bash --options ${SHORTOPTS} --longoptions ${LONGOPTS} --name ${PROGNAME} -- "$@")"
 eval set -- "$OPTS"
 
 #Base variable declaration
@@ -172,34 +172,34 @@ if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
     if [ "$(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:])" ]; then
 
-        NEWPATH=${DESTINATION}/${FILENAME}-
-        NEWFILE=${NEWPATH}updated.ovpn
-        cp $FILE $NEWFILE
+        NEWPATH="${DESTINATION}/${FILENAME}-"
+        NEWFILE="${NEWPATH}updated.ovpn"
+        cp "$FILE" "$NEWFILE"
 
         if grep -q "<ca>" "$FILE"; then
-            sed '1,/<ca>/d;/<\/ca>/,$d' $FILE > "${NEWPATH}ca.crt"
+            sed '1,/<ca>/d;/<\/ca>/,$d' "$FILE" > "${NEWPATH}ca.crt"
             sed -i "/<ca>/,/<\/ca>/c\ca ${NEWPATH}ca.crt" ${NEWFILE}
             sed -i "/^ca \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<cert>" "$FILE"; then
-            sed '1,/<cert>/d;/<\/cert>/,$d' $FILE > "${NEWPATH}client.crt"
+            sed '1,/<cert>/d;/<\/cert>/,$d' "$FILE" > "${NEWPATH}client.crt"
             sed -i "/<cert>/,/<\/cert>/c\cert ${NEWPATH}client.crt" "${NEWFILE}"
             sed -i "/^cert \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<key>" "$FILE"; then
-            sed '1,/<key>/d;/<\/key>/,$d' $FILE > "${NEWPATH}client.key"
+            sed '1,/<key>/d;/<\/key>/,$d' "$FILE" > "${NEWPATH}client.key"
             sed -i "/<key>/,/<\/key>/c\key ${NEWPATH}client.key" "${NEWFILE}"
             sed -i "/^key \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<tls-auth>" "$FILE"; then
-            sed '1,/<tls-auth>/d;/<\/tls-auth>/,$d' $FILE > "${NEWPATH}ta.key"
+            sed '1,/<tls-auth>/d;/<\/tls-auth>/,$d' "$FILE" > "${NEWPATH}ta.key"
             sed -i "/<tls-auth>/,/<\/tls-auth>/c\tls-auth ${NEWPATH}ta.key" "${NEWFILE}"
             sed -i "/^tls-auth \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<dh>" "$FILE"; then
-            sed '1,/<dh>/d;/<\/dh>/,$d' $FILE > "${NEWPATH}dh.pem"
+            sed '1,/<dh>/d;/<\/dh>/,$d' "$FILE" > "${NEWPATH}dh.pem"
             sed -i "/<dh>/,/<\/dh>/c\dh ${NEWPATH}dh.pem" "${NEWFILE}"
-            sed -i "/^dh \[inline\]/d" ${NEWFILE}
+            sed -i "/^dh \[inline\]/d" "${NEWFILE}"
         fi
         echo "New OVPN config file created: $NEWFILE"
 
@@ -221,7 +221,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
             VARVAL="${!VAR}"
             if [ -z "$VARVAL" ]; then
                 tagname=$(echo "$tagname" | sed "s/_/-/")
-                path="$(sed -n -e "/^$tagname \[/b;s/^$tagname //p" $NEWFILE | xargs -r readlink -f)"
+                path="$(sed -n -e "/^$tagname \[/b;s/^$tagname //p" "$NEWFILE" | xargs -r readlink -f)"
                 if [ ! -z "$path" ]; then
                     declare $VAR="$path"
                 fi

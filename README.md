@@ -22,25 +22,32 @@ The script can be used to merge or split OVPN file.
 
 Basic Usage:
 
-    ./OVPN-config-manipulator.sh [options..] <ovpn-config-file> 
+```shell
+./OVPN-config-manipulator.sh [options..] <ovpn-config-file> 
+```
 
 To split a OVPN file into main config file and relevant cert and key files, the script can be used as follows
 
-    ./OVPN-config-manipulator.sh -p -s home/openvpn/vpn.ovpn -d home/openvpn/split/
+```shell
+./OVPN-config-manipulator.sh -p -s home/openvpn/vpn.ovpn -d home/openvpn/split/
+```
 
 In the above example `-p` option specifies split operation. The source file is read from location specified in `-s` option. The final split files are stored in the directory specified in `-d` option.
 
 To merge OVPN config file and relevant certificates, the script can be used as follows
 
-    ./OVPN-config-manipulator.sh -m=auto -s home/openvpn/vpn.ovpn -d home/openvpn/merged/ \
+```shell
+./OVPN-config-manipulator.sh -m=auto -s home/openvpn/vpn.ovpn -d home/openvpn/merged/ \
     --ca home/openvpn/vpn-ca.crt \
     --cert home/openvpn/vpn-client.crt \
     --key home/openvpn/vpn-client.key
+```
 
 In the above example `-m` option indicates merge operation. The source file is loaded from file specified in `-s` option and output single merged config file is saved to destination folder specified in `-d` option. The `auto` option set to `-m` flag will make the script to auto detect ca file, certificate, key, tls-auth certificate and dh-params files from path specified within the OVPN file. If those values exists within the OVPN config file then the script automatically tries to read content from the location and link it to the file. The values can be overriden by options provided to the script. So in the above example Certificate authority file will be loaded from location provided by `--ca` option even if the path is different in the OVPN config file. 
 
 List of options available in the script are
 
+```
     -p | --split - flag to split ovpn file.
     -s<filepath> | --source <filepath> - Option to pass the source ovpn file.
     -d<folderpath> | --destination <folderpath> - Destination location where the newly created config to be stored. 
@@ -52,6 +59,7 @@ List of options available in the script are
     --tls-auth <filepath>  - option to specify the location of the tls-auth file.
     --dh-params <filepath> - opton to specify the location of the dh params file.
     -h | --help - Display usage instructions.
+```
 
 ## License
 
