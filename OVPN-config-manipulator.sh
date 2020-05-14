@@ -252,7 +252,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
                 echo "${tagname} [inline]" >> "${NEWFILE}"
             fi
             if grep -qE "^${tagname}[ \t]*.*$" "$NEWFILE"; then
-                FULLFILENAME="$(basename ${VARVAL})"
+                FULLFILENAME="$(basename "${VARVAL}")"
                 sed -i "/${tagname} .*${FULLFILENAME}/c\<${tagname}>\n<\/${tagname}>" "${NEWFILE}"
                 sed -i "/<${tagname}>/r ${VARVAL}" "${NEWFILE}"
             else
