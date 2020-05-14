@@ -39,7 +39,7 @@ SHORTOPTS="hm::ps:d:D:"
 LONGOPTS="help,merge::,split,source:,destination:,ca:,cert:,key:,tls-auth:,dh-params:"
 set -o errexit -o noclobber -o pipefail
 
-OPTS=$(getopt -s bash --options $SHORTOPTS --longoptions $LONGOPTS --name $PROGNAME -- "$@")
+OPTS="$(getopt -s bash --options $SHORTOPTS --longoptions $LONGOPTS --name $PROGNAME -- "$@")"
 eval set -- "$OPTS"
 
 #Base variable declaration
@@ -139,7 +139,7 @@ fi
 
 # If Destination folder is specified then we check whether the folder is there, if not the folder is created.
 if [ ! -z "$DESTINATION" ] && [ ! -d "$DESTINATION" ]; then
-    mkdir -p $DESTINATION
+    mkdir -p "$DESTINATION"
     if [ $? -ne 0 ]; then
         echo "Creating destination directory failed."
         exit 1
@@ -170,35 +170,35 @@ EXTENSION="${FULLFILENAME##*.}"
 
 if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
-    if [ $(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:]) ]; then
+    if [ "$(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:])" ]; then
 
         NEWPATH=${DESTINATION}/${FILENAME}-
         NEWFILE=${NEWPATH}updated.ovpn
         cp $FILE $NEWFILE
 
         if grep -q "<ca>" "$FILE"; then
-            sed '1,/<ca>/d;/<\/ca>/,$d' $FILE > ${NEWPATH}ca.crt
+            sed '1,/<ca>/d;/<\/ca>/,$d' $FILE > "${NEWPATH}ca.crt"
             sed -i "/<ca>/,/<\/ca>/c\ca ${NEWPATH}ca.crt" ${NEWFILE}
             sed -i "/^ca \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<cert>" "$FILE"; then
-            sed '1,/<cert>/d;/<\/cert>/,$d' $FILE > ${NEWPATH}client.crt
-            sed -i "/<cert>/,/<\/cert>/c\cert ${NEWPATH}client.crt" ${NEWFILE}
+            sed '1,/<cert>/d;/<\/cert>/,$d' $FILE > "${NEWPATH}client.crt"
+            sed -i "/<cert>/,/<\/cert>/c\cert ${NEWPATH}client.crt" "${NEWFILE}"
             sed -i "/^cert \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<key>" "$FILE"; then
-            sed '1,/<key>/d;/<\/key>/,$d' $FILE > ${NEWPATH}client.key
-            sed -i "/<key>/,/<\/key>/c\key ${NEWPATH}client.key" ${NEWFILE}
+            sed '1,/<key>/d;/<\/key>/,$d' $FILE > "${NEWPATH}client.key"
+            sed -i "/<key>/,/<\/key>/c\key ${NEWPATH}client.key" "${NEWFILE}"
             sed -i "/^key \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<tls-auth>" "$FILE"; then
-            sed '1,/<tls-auth>/d;/<\/tls-auth>/,$d' $FILE > ${NEWPATH}ta.key
-            sed -i "/<tls-auth>/,/<\/tls-auth>/c\tls-auth ${NEWPATH}ta.key" ${NEWFILE}
+            sed '1,/<tls-auth>/d;/<\/tls-auth>/,$d' $FILE > "${NEWPATH}ta.key"
+            sed -i "/<tls-auth>/,/<\/tls-auth>/c\tls-auth ${NEWPATH}ta.key" "${NEWFILE}"
             sed -i "/^tls-auth \[inline\]/d" ${NEWFILE}
         fi
         if grep -q "<dh>" "$FILE"; then
-            sed '1,/<dh>/d;/<\/dh>/,$d' $FILE > ${NEWPATH}dh.pem
-            sed -i "/<dh>/,/<\/dh>/c\dh ${NEWPATH}dh.pem" ${NEWFILE}
+            sed '1,/<dh>/d;/<\/dh>/,$d' $FILE > "${NEWPATH}dh.pem"
+            sed -i "/<dh>/,/<\/dh>/c\dh ${NEWPATH}dh.pem" "${NEWFILE}"
             sed -i "/^dh \[inline\]/d" ${NEWFILE}
         fi
         echo "New OVPN config file created: $NEWFILE"
@@ -211,8 +211,8 @@ if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
 fi
 
 if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
-    NEWFILE=${DESTINATION}/${FILENAME}-merged.ovpn
-    cp $FILE $NEWFILE
+    NEWFILE="${DESTINATION}/${FILENAME}-merged.ovpn"
+    cp "$FILE" "$NEWFILE"
 
     # if merge auto is set then try to find the certificate/key path from the source ovpn file
     if [ "$MERGEAUTO" = true ]; then
@@ -229,7 +229,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
         done
     fi
 
-    if [ -z "$CA" ] && [ -z "$CERT" ] && [ -z "$KEY" ] && [ -z "$TLSAUTH" ]; then
+    if [ -z "$CA" ] && [ -z "$CERT" ] && [ -z "$KEY" ] && [ -z "$TLS_AUTH" ]; then
         echo "Atleast one option (ca,cert,key,tls-auth) parameter is required."
         exit 1
     fi
@@ -244,21 +244,21 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
             exit 1
         fi
         #replace underscore with hypen in tagname for searching the file
-        tagname=$(echo "$tagname" | sed "s/_/-/")
+        tagname="${tagname//_/-}"
         if [ ! -z "$VARVAL" ]; then
             #If substitution exist in the config file then replace it with inline content
             #else append the config file with the content of the file
             if ! grep -qE "^${tagname} \[inline\]" "$NEWFILE"; then
-                echo "${tagname} [inline]" >> ${NEWFILE}
+                echo "${tagname} [inline]" >> "${NEWFILE}"
             fi
             if grep -qE "^${tagname}[ \t]*.*$" "$NEWFILE"; then
                 FULLFILENAME=$(basename $VARVAL)
-                sed -i "/${tagname} .*${FULLFILENAME}/c\<${tagname}>\n<\/${tagname}>" ${NEWFILE}
-                sed -i "/<${tagname}>/r ${VARVAL}" ${NEWFILE}
+                sed -i "/${tagname} .*${FULLFILENAME}/c\<${tagname}>\n<\/${tagname}>" "${NEWFILE}"
+                sed -i "/<${tagname}>/r ${VARVAL}" "${NEWFILE}"
             else
-                echo "<${tagname}>" >> ${NEWFILE}
-                cat ${VARVAL} >> ${NEWFILE}
-                echo "</${tagname}>" >> ${NEWFILE}
+                echo "<${tagname}>" >> "${NEWFILE}"
+                cat ${VARVAL} >> "${NEWFILE}"
+                echo "</${tagname}>" >> "${NEWFILE}"
             fi
 
         fi

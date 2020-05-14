@@ -1,4 +1,10 @@
-# OVPN Config Manipulator
+<h1 align="center">OVPN Config Manipulator</h1>
+<p align="center">
+<a href="https://github.com/labbots/OVPN-Config-Manipulator/releases"><img src="https://img.shields.io/github/release/labbots/OVPN-Config-Manipulator.svg?style=for-the-badge" alt="Latest Release"></a>
+<a href="https://github.com/labbots/OVPN-Config-Manipulator/blob/master/LICENSE"><img src="https://img.shields.io/github/license/labbots/OVPN-Config-Manipulator.svg?style=for-the-badge" alt="License"></a>
+<a href="https://www.codacy.com/manual/labbots/OVPN-Config-Manipulator?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=labbots/OVPN-Config-Manipulator&amp;utm_campaign=Badge_Grade"><img alt="Codacy grade" src="https://img.shields.io/codacy/grade/d1cafdb781464fab858155b31116f2e7?style=for-the-badge"></a>
+</p>
+
 Open VPN config file (.ovpn) contains several certificates and key files which are required for the setup. This script allows you to merge those certificates and keys into single config file. The script can also be used to split a single self-contained ovpn config file to individual config and cert files.
 
 ## Dependencies
@@ -50,4 +56,3 @@ List of options available in the script are
 ## License
 
 MIT
-
