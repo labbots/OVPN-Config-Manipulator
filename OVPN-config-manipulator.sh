@@ -39,7 +39,7 @@ SHORTOPTS="hm::ps:d:D:"
 LONGOPTS="help,merge::,split,source:,destination:,ca:,cert:,key:,tls-auth:,dh-params:"
 set -o errexit -o noclobber -o pipefail
 
-OPTS="$(getopt -s bash --options ${SHORTOPTS} --longoptions ${LONGOPTS} --name ${PROGNAME} -- "$@")"
+OPTS="$(getopt -s bash --options "${SHORTOPTS}" --longoptions "${LONGOPTS}" --name "${PROGNAME}" -- "$@")"
 eval set -- "$OPTS"
 
 #Base variable declaration
@@ -144,19 +144,19 @@ if [ ! -z "$DESTINATION" ] && [ ! -d "$DESTINATION" ]; then
         echo "Creating destination directory failed."
         exit 1
     fi
-    DESTINATION="$(readlink -f $DESTINATION)"
+    DESTINATION="$(readlink -f "$DESTINATION")"
 
 fi
 
 if [ ! -z "$DESTINATION" ] && [ -d "$DESTINATION" ]; then
 
-    DESTINATION="$(readlink -f $DESTINATION)"
+    DESTINATION="$(readlink -f "$DESTINATION")"
 fi
 
 # If Destination is empty then create files in the same directory as of source file
 if [ -z "$DESTINATION" ]; then
 
-    DESTINATION="$(dirname "$(readlink -f $FILE)")"
+    DESTINATION="$(dirname "$(readlink -f "$FILE")")"
 fi
 
 if [ ! -f "$FILE" ]; then
@@ -164,13 +164,13 @@ if [ ! -f "$FILE" ]; then
     exit 1
 fi
 
-FULLFILENAME=$(basename $FILE)
+FULLFILENAME="$(basename "${FILE}")"
 FILENAME="${FULLFILENAME%.*}"
 EXTENSION="${FULLFILENAME##*.}"
 
 if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
-    if [ "$(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo $EXTENSION | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:])" ]; then
+    if [ "$(echo "$EXTENSION" | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo "$EXTENSION" | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:])" ]; then
 
         NEWPATH="${DESTINATION}/${FILENAME}-"
         NEWFILE="${NEWPATH}updated.ovpn"
@@ -178,7 +178,7 @@ if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
         if grep -q "<ca>" "$FILE"; then
             sed '1,/<ca>/d;/<\/ca>/,$d' "$FILE" > "${NEWPATH}ca.crt"
-            sed -i "/<ca>/,/<\/ca>/c\ca ${NEWPATH}ca.crt" ${NEWFILE}
+            sed -i "/<ca>/,/<\/ca>/c\ca ${NEWPATH}ca.crt" "${NEWFILE}"
             sed -i "/^ca \[inline\]/d" "${NEWFILE}"
         fi
         if grep -q "<cert>" "$FILE"; then
@@ -223,7 +223,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
                 tagname="${tagname//_/-}"
                 path="$(sed -n -e "/^$tagname \[/b;s/^$tagname //p" "$NEWFILE" | xargs -r readlink -f)"
                 if [ ! -z "$path" ]; then
-                    declare $VAR="$path"
+                    declare "$VAR"="$path"
                 fi
             fi
         done
@@ -257,7 +257,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
                 sed -i "/<${tagname}>/r ${VARVAL}" "${NEWFILE}"
             else
                 echo "<${tagname}>" >> "${NEWFILE}"
-                cat ${VARVAL} >> "${NEWFILE}"
+                cat "${VARVAL}" >> "${NEWFILE}"
                 echo "</${tagname}>" >> "${NEWFILE}"
             fi
 
