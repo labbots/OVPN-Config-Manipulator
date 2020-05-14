@@ -179,22 +179,22 @@ if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
         if grep -q "<ca>" "$FILE"; then
             sed '1,/<ca>/d;/<\/ca>/,$d' "$FILE" > "${NEWPATH}ca.crt"
             sed -i "/<ca>/,/<\/ca>/c\ca ${NEWPATH}ca.crt" ${NEWFILE}
-            sed -i "/^ca \[inline\]/d" ${NEWFILE}
+            sed -i "/^ca \[inline\]/d" "${NEWFILE}"
         fi
         if grep -q "<cert>" "$FILE"; then
             sed '1,/<cert>/d;/<\/cert>/,$d' "$FILE" > "${NEWPATH}client.crt"
             sed -i "/<cert>/,/<\/cert>/c\cert ${NEWPATH}client.crt" "${NEWFILE}"
-            sed -i "/^cert \[inline\]/d" ${NEWFILE}
+            sed -i "/^cert \[inline\]/d" "${NEWFILE}"
         fi
         if grep -q "<key>" "$FILE"; then
             sed '1,/<key>/d;/<\/key>/,$d' "$FILE" > "${NEWPATH}client.key"
             sed -i "/<key>/,/<\/key>/c\key ${NEWPATH}client.key" "${NEWFILE}"
-            sed -i "/^key \[inline\]/d" ${NEWFILE}
+            sed -i "/^key \[inline\]/d" "${NEWFILE}"
         fi
         if grep -q "<tls-auth>" "$FILE"; then
             sed '1,/<tls-auth>/d;/<\/tls-auth>/,$d' "$FILE" > "${NEWPATH}ta.key"
             sed -i "/<tls-auth>/,/<\/tls-auth>/c\tls-auth ${NEWPATH}ta.key" "${NEWFILE}"
-            sed -i "/^tls-auth \[inline\]/d" ${NEWFILE}
+            sed -i "/^tls-auth \[inline\]/d" "${NEWFILE}"
         fi
         if grep -q "<dh>" "$FILE"; then
             sed '1,/<dh>/d;/<\/dh>/,$d' "$FILE" > "${NEWPATH}dh.pem"
@@ -220,7 +220,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
             VAR=$(echo "$tagname" | tr '[:lower:]' '[:upper:]')
             VARVAL="${!VAR}"
             if [ -z "$VARVAL" ]; then
-                tagname=$(echo "$tagname" | sed "s/_/-/")
+                tagname="${tagname//_/-}"
                 path="$(sed -n -e "/^$tagname \[/b;s/^$tagname //p" "$NEWFILE" | xargs -r readlink -f)"
                 if [ ! -z "$path" ]; then
                     declare $VAR="$path"
@@ -229,8 +229,8 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
         done
     fi
 
-    if [ -z "$CA" ] && [ -z "$CERT" ] && [ -z "$KEY" ] && [ -z "$TLS_AUTH" ]; then
-        echo "Atleast one option (ca,cert,key,tls-auth) parameter is required."
+    if [ -z "$CA" ] && [ -z "$CERT" ] && [ -z "$KEY" ] && [ -z "$TLS_AUTH" ] && [ -z "$DH" ]; then
+        echo "Atleast one option (ca,cert,key,tls-auth,dh-params) parameter is required."
         exit 1
     fi
 
@@ -252,7 +252,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
                 echo "${tagname} [inline]" >> "${NEWFILE}"
             fi
             if grep -qE "^${tagname}[ \t]*.*$" "$NEWFILE"; then
-                FULLFILENAME=$(basename $VARVAL)
+                FULLFILENAME="$(basename ${VARVAL})"
                 sed -i "/${tagname} .*${FULLFILENAME}/c\<${tagname}>\n<\/${tagname}>" "${NEWFILE}"
                 sed -i "/<${tagname}>/r ${VARVAL}" "${NEWFILE}"
             else

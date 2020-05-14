@@ -47,7 +47,7 @@ In the above example `-m` option indicates merge operation. The source file is l
 
 List of options available in the script are
 
-```
+```shell
     -p | --split - flag to split ovpn file.
     -s<filepath> | --source <filepath> - Option to pass the source ovpn file.
     -d<folderpath> | --destination <folderpath> - Destination location where the newly created config to be stored. 
