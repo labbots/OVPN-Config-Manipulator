@@ -127,7 +127,7 @@ fi
 
 # If argument is passed to the script, the source set through options is overridden by argument value.
 # argument takes priority.
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
     FILE="$1"
 fi
 
@@ -138,7 +138,7 @@ if [ -z "$FILE" ]; then
 fi
 
 # If Destination folder is specified then we check whether the folder is there, if not the folder is created.
-if [ ! -z "$DESTINATION" ] && [ ! -d "$DESTINATION" ]; then
+if [ -n "$DESTINATION" ] && [ ! -d "$DESTINATION" ]; then
     mkdir -p "$DESTINATION"
     if [ $? -ne 0 ]; then
         echo "Creating destination directory failed."
@@ -148,7 +148,7 @@ if [ ! -z "$DESTINATION" ] && [ ! -d "$DESTINATION" ]; then
 
 fi
 
-if [ ! -z "$DESTINATION" ] && [ -d "$DESTINATION" ]; then
+if [ -n "$DESTINATION" ] && [ -d "$DESTINATION" ]; then
 
     DESTINATION="$(readlink -f "$DESTINATION")"
 fi
@@ -168,7 +168,7 @@ FULLFILENAME="$(basename "${FILE}")"
 FILENAME="${FULLFILENAME%.*}"
 EXTENSION="${FULLFILENAME##*.}"
 
-if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
+if [ -n "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
     if [ "$(echo "$EXTENSION" | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo "$EXTENSION" | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:])" ]; then
 
@@ -210,7 +210,7 @@ if [ ! -z "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
 fi
 
-if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
+if [ -n "$MERGE" ] && [ "$MERGE" = true ]; then
     NEWFILE="${DESTINATION}/${FILENAME}-merged.ovpn"
     cp "$FILE" "$NEWFILE"
 
@@ -222,7 +222,7 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
             if [ -z "$VARVAL" ]; then
                 tagname="${tagname//_/-}"
                 path="$(sed -n -e "/^$tagname \[/b;s/^$tagname //p" "$NEWFILE" | xargs -r readlink -f)"
-                if [ ! -z "$path" ]; then
+                if [ -n "$path" ]; then
                     declare "$VAR"="$path"
                 fi
             fi
@@ -239,13 +239,13 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
         VAR=$(echo "$tagname" | tr '[:lower:]' '[:upper:]')
         VARVAL="${!VAR}"
 
-        if [ ! -z "$VARVAL" ] && [ ! -f "$VARVAL" ]; then
+        if [ -n "$VARVAL" ] && [ ! -f "$VARVAL" ]; then
             echo "Provided ${tagname} file does not exist."
             exit 1
         fi
         #replace underscore with hypen in tagname for searching the file
         tagname="${tagname//_/-}"
-        if [ ! -z "$VARVAL" ]; then
+        if [ -n "$VARVAL" ]; then
             #If substitution exist in the config file then replace it with inline content
             #else append the config file with the content of the file
             if ! grep -qE "^${tagname} \[inline\]" "$NEWFILE"; then
@@ -256,9 +256,11 @@ if [ ! -z "$MERGE" ] && [ "$MERGE" = true ]; then
                 sed -i "/${tagname} .*${FULLFILENAME}/c\<${tagname}>\n<\/${tagname}>" "${NEWFILE}"
                 sed -i "/<${tagname}>/r ${VARVAL}" "${NEWFILE}"
             else
-                echo "<${tagname}>" >> "${NEWFILE}"
-                cat "${VARVAL}" >> "${NEWFILE}"
-                echo "</${tagname}>" >> "${NEWFILE}"
+                {
+                    echo "<${tagname}>"
+                    cat "${VARVAL}"
+                    echo "</${tagname}>"
+                } >> "${NEWFILE}"
             fi
 
         fi
