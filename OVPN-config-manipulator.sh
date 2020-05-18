@@ -139,8 +139,7 @@ fi
 
 # If Destination folder is specified then we check whether the folder is there, if not the folder is created.
 if [ -n "$DESTINATION" ] && [ ! -d "$DESTINATION" ]; then
-    mkdir -p "$DESTINATION"
-    if [ $? -ne 0 ]; then
+    if ! mkdir -p "$DESTINATION"; then
         echo "Creating destination directory failed."
         exit 1
     fi
@@ -170,7 +169,7 @@ EXTENSION="${FULLFILENAME##*.}"
 
 if [ -n "$SPLIT" ] && [ "$SPLIT" = true ]; then
 
-    if [ "$(echo "$EXTENSION" | tr [:upper:] [:lower:]) = $(echo "conf" | tr [:upper:] [:lower:]) ] || [ $(echo "$EXTENSION" | tr [:upper:] [:lower:]) = $(echo "ovpn" | tr [:upper:] [:lower:])" ]; then
+    if [ "$(echo "$EXTENSION" | tr '[:upper:] [:lower:]')" = "$(echo "conf" | tr '[:upper:] [:lower:]') ] || [ $(echo "$EXTENSION" | tr '[:upper:] [:lower:]') = $(echo "ovpn" | tr '[:upper:] [:lower:]')" ]; then
 
         NEWPATH="${DESTINATION}/${FILENAME}-"
         NEWFILE="${NEWPATH}updated.ovpn"
